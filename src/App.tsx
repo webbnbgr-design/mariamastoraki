@@ -15,12 +15,31 @@ import {
   Star,
   Quote,
   BookOpen,
-  Gavel
+  Gavel,
+  ArrowUp,
+  CheckCircle2,
+  Award
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useScroll, useSpring } from 'motion/react';
 import { cn } from '@/src/lib/utils';
 
 // --- Components ---
+
+const ScrollProgress = () => {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+
+  return (
+    <motion.div
+      className="fixed top-0 left-0 right-0 h-1 bg-secondary z-[60] origin-left"
+      style={{ scaleX }}
+    />
+  );
+};
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -41,41 +60,60 @@ const Navbar = () => {
 
   return (
     <nav className={cn(
-      "fixed w-full z-50 transition-all duration-300",
-      scrolled ? "bg-white shadow-md py-2" : "bg-transparent py-4"
+      "fixed w-full z-50 transition-all duration-500",
+      scrolled ? "bg-white/90 backdrop-blur-lg shadow-lg py-3" : "bg-transparent py-6"
     )}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
-          <div className="flex-shrink-0 flex flex-col">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex-shrink-0 flex flex-col"
+          >
             <span className={cn(
-              "font-display text-xl font-bold tracking-tight",
+              "font-display text-2xl font-bold tracking-tight transition-colors duration-300",
               scrolled ? "text-primary" : "text-white"
             )}>
               ΜΑΡΙΑ ΜΑΣΤΟΡΑΚΗ
             </span>
             <span className={cn(
-              "text-[10px] font-medium uppercase tracking-[0.2em]",
-              scrolled ? "text-gray-500" : "text-gray-300"
+              "text-[10px] font-bold uppercase tracking-[0.3em] transition-colors duration-300",
+              scrolled ? "text-secondary" : "text-gray-300"
             )}>
               ΔΙΚΗΓΟΡΟΣ ΠΑΡ' ΑΡΕΙΩ ΠΑΓΩ
             </span>
-          </div>
+          </motion.div>
           
           {/* Desktop Menu */}
           <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-8">
-              {navLinks.map((link) => (
-                <a
+            <div className="ml-10 flex items-baseline space-x-10">
+              {navLinks.map((link, idx) => (
+                <motion.a
                   key={link.name}
                   href={link.href}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
                   className={cn(
-                    "px-3 py-2 text-sm font-medium transition-colors hover:text-secondary",
-                    scrolled ? "text-gray-700" : "text-white"
+                    "relative px-1 py-2 text-sm font-semibold transition-all group",
+                    scrolled ? "text-slate-700" : "text-white"
                   )}
                 >
                   {link.name}
-                </a>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-secondary transition-all duration-300 group-hover:w-full"></span>
+                </motion.a>
               ))}
+              <a
+                href="#contact"
+                className={cn(
+                  "px-6 py-2.5 rounded-sm text-sm font-bold transition-all transform hover:scale-105 active:scale-95",
+                  scrolled 
+                    ? "bg-primary text-white hover:bg-secondary shadow-md" 
+                    : "bg-white text-primary hover:bg-secondary hover:text-white"
+                )}
+              >
+                ΕΠΙΚΟΙΝΩΝΙΑ
+              </a>
             </div>
           </div>
 
@@ -84,11 +122,11 @@ const Navbar = () => {
             <button
               onClick={() => setIsOpen(!isOpen)}
               className={cn(
-                "p-2 rounded-md",
-                scrolled ? "text-gray-700" : "text-white"
+                "p-2 rounded-md transition-colors",
+                scrolled ? "text-primary" : "text-white"
               )}
             >
-              {isOpen ? <X size={24} /> : <Menu size={24} />}
+              {isOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
           </div>
         </div>
@@ -98,22 +136,31 @@ const Navbar = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white border-b border-gray-100 overflow-hidden"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="md:hidden bg-white border-b border-slate-100 shadow-2xl overflow-hidden"
           >
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            <div className="px-4 pt-4 pb-8 space-y-2">
               {navLinks.map((link) => (
                 <a
                   key={link.name}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
-                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50"
+                  className="block px-4 py-4 text-lg font-bold text-slate-800 hover:text-secondary hover:bg-slate-50 rounded-lg transition-all"
                 >
                   {link.name}
                 </a>
               ))}
+              <div className="pt-4">
+                <a
+                  href="#contact"
+                  onClick={() => setIsOpen(false)}
+                  className="block w-full text-center py-4 bg-primary text-white font-bold rounded-lg shadow-lg"
+                >
+                  ΚΛΕΙΣΤΕ ΡΑΝΤΕΒΟΥ
+                </a>
+              </div>
             </div>
           </motion.div>
         )}
@@ -125,47 +172,95 @@ const Navbar = () => {
 const Hero = () => {
   return (
     <section id="home" className="relative h-screen flex items-center overflow-hidden">
-      {/* Background Image */}
-      <div className="absolute inset-0 z-0">
+      <motion.div 
+        initial={{ scale: 1.1 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 10, repeat: Infinity, repeatType: "reverse" }}
+        className="absolute inset-0 z-0"
+      >
         <img
           src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=2000"
-          alt="Law Books"
+          alt="Law Library"
           className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
         />
-        <div className="absolute inset-0 bg-primary/80 mix-blend-multiply"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+      </motion.div>
+      
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/70 to-transparent z-10"></div>
+      <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-transparent to-transparent z-10"></div>
+
+      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-white">
+        <div className="max-w-4xl">
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            <span className="inline-block px-4 py-1.5 bg-secondary/20 backdrop-blur-sm border border-secondary/30 text-secondary font-bold text-xs uppercase tracking-[0.4em] mb-6 rounded-full">
+              Εξειδικευμένη Νομική Υποστήριξη
+            </span>
+            <h1 className="font-display text-6xl md:text-8xl font-bold mb-8 leading-[1.1] tracking-tight">
+              Μάχιμη <span className="text-secondary italic">Δικηγορία</span> & Κύρος
+            </h1>
+            <p className="text-xl md:text-2xl text-slate-200 mb-12 font-light leading-relaxed max-w-2xl">
+              Με πολυετή εμπειρία και απόλυτη προσήλωση στο δίκαιο, παρέχουμε στρατηγικές λύσεις για κάθε νομική σας πρόκληση.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-6">
+              <motion.a
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                href="#contact"
+                className="inline-flex items-center justify-center px-10 py-5 bg-secondary text-white text-base font-bold rounded-sm shadow-[0_10px_30px_-10px_rgba(127,29,29,0.5)] hover:bg-red-900 transition-all"
+              >
+                Κλείστε Ραντεβού
+                <ChevronRight className="ml-2" size={20} />
+              </motion.a>
+              <motion.a
+                whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+                href="#services"
+                className="inline-flex items-center justify-center px-10 py-5 border-2 border-white/30 text-white text-base font-bold rounded-sm backdrop-blur-sm transition-all"
+              >
+                Υπηρεσίες
+              </motion.a>
+            </div>
+          </motion.div>
+        </div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-white">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-3xl"
-        >
-          <h1 className="font-display text-5xl md:text-7xl font-bold mb-6 leading-tight">
-            Μάχιμη Δικηγορία & Εξειδικευμένη Νομική Υποστήριξη
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-200 mb-10 font-light leading-relaxed">
-            Με συνέπεια, ήθος και πολυετή εμπειρία, παρέχουμε ολοκληρωμένες νομικές υπηρεσίες για την προάσπιση των συμφερόντων σας.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <a
-              href="#contact"
-              className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-semibold rounded-sm text-white bg-secondary hover:bg-red-900 transition-all shadow-lg hover:shadow-xl"
-            >
-              Κλείστε Ραντεβού
-              <ChevronRight className="ml-2" size={20} />
-            </a>
-            <a
-              href="#services"
-              className="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-base font-semibold rounded-sm text-white hover:bg-white hover:text-primary transition-all"
-            >
-              Οι Υπηρεσίες μας
-            </a>
-          </div>
-        </motion.div>
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 animate-bounce hidden md:block">
+        <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center p-1">
+          <div className="w-1 h-2 bg-white rounded-full"></div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const Stats = () => {
+  const stats = [
+    { label: 'Έτη Εμπειρίας', value: '20+' },
+    { label: 'Υποθέσεις', value: '1500+' },
+    { label: 'Επιτυχία', value: '98%' },
+    { label: 'Εντολείς', value: '500+' },
+  ];
+
+  return (
+    <section className="relative z-30 -mt-16 max-w-6xl mx-auto px-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-0 bg-white shadow-2xl rounded-sm overflow-hidden divide-x divide-slate-100">
+        {stats.map((stat, idx) => (
+          <motion.div 
+            key={idx}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: idx * 0.1 }}
+            className="p-8 text-center"
+          >
+            <p className="text-4xl font-display font-bold text-secondary mb-2">{stat.value}</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{stat.label}</p>
+          </motion.div>
+        ))}
       </div>
     </section>
   );
@@ -173,56 +268,71 @@ const Hero = () => {
 
 const About = () => {
   return (
-    <section id="about" className="py-24 bg-white">
+    <section id="about" className="py-32 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             className="relative"
           >
-            <div className="aspect-[4/5] overflow-hidden rounded-sm shadow-2xl">
+            <div className="relative z-10 rounded-sm overflow-hidden shadow-2xl">
               <img
                 src="https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&q=80&w=1000"
-                alt="Law Office"
-                className="w-full h-full object-cover"
+                alt="Maria Mastoraki"
+                className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
                 referrerPolicy="no-referrer"
               />
             </div>
-            <div className="absolute -bottom-6 -right-6 bg-secondary p-8 text-white hidden md:block rounded-sm shadow-xl">
-              <p className="text-4xl font-bold mb-1">20+</p>
-              <p className="text-sm uppercase tracking-wider font-medium">Έτη Εμπειρίας</p>
-            </div>
+            <div className="absolute -top-10 -left-10 w-40 h-40 bg-accent -z-0"></div>
+            <div className="absolute -bottom-10 -right-10 w-64 h-64 border-8 border-slate-100 -z-0"></div>
+            
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="absolute -bottom-6 -left-6 bg-secondary p-8 text-white z-20 shadow-xl"
+            >
+              <Award size={40} className="mb-4 text-white/50" />
+              <p className="text-sm font-bold uppercase tracking-widest leading-tight">
+                Νομική Σχολή Αθηνών<br/>
+                <span className="text-white/70 font-normal">Απόφοιτος</span>
+              </p>
+            </motion.div>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-sm font-bold text-secondary uppercase tracking-[0.2em] mb-4">Το Γραφείο</h2>
-            <h3 className="font-display text-4xl font-bold text-primary mb-8">Μαρία Μαστοράκη</h3>
-            <div className="space-y-6 text-gray-600 text-lg leading-relaxed">
-              <p>
-                Η Μαρία Μαστοράκη είναι Δικηγόρος παρ' Αρείω Πάγω, απόφοιτος της Νομικής Σχολής του Εθνικού και Καποδιστριακού Πανεπιστημίου Αθηνών.
+            <span className="section-subtitle">Το Γραφείο</span>
+            <h2 className="section-title">Μαρία Μαστοράκη</h2>
+            <div className="space-y-6 text-slate-600 text-lg leading-relaxed font-light">
+              <p className="font-medium text-primary">
+                Η Μαρία Μαστοράκη είναι Δικηγόρος παρ' Αρείω Πάγω, με εξειδίκευση στο Εργατικό και Αστικό Δίκαιο.
               </p>
               <p>
-                Με πολυετή μάχιμη δικηγορία και βαθιά γνώση του ελληνικού δικαίου, το γραφείο μας προσφέρει εξειδικευμένη νομική υποστήριξη σε ένα ευρύ φάσμα υποθέσεων, με ιδιαίτερη έμφαση στο Εργατικό και Αστικό Δίκαιο.
+                Μετά την αποφοίτησή της από τη Νομική Σχολή Αθηνών, ακολούθησε μια πορεία συνεχούς μάχιμης δικηγορίας, αναλαμβάνοντας υποθέσεις υψηλής πολυπλοκότητας. Η φιλοσοφία του γραφείου μας βασίζεται στην <strong>προσωπική ενασχόληση</strong> με κάθε εντολέα.
               </p>
               <p>
-                Στόχος μας είναι η παροχή υψηλού επιπέδου νομικών υπηρεσιών, βασισμένων στην προσωπική επαφή με τον εντολέα, την ειλικρίνεια και την αποτελεσματικότητα. Κάθε υπόθεση αντιμετωπίζεται με τη δέουσα προσοχή και επαγγελματισμό.
+                Πιστεύουμε ότι η δικαιοσύνη απαιτεί όχι μόνο γνώση, αλλά και θάρρος, επιμονή και απόλυτη εχεμύθεια. Στο γραφείο μας, κάθε υπόθεση είναι μοναδική και αντιμετωπίζεται με τη δέουσα σοβαρότητα που αρμόζει στο λειτούργημά μας.
               </p>
             </div>
-            <div className="mt-10 grid grid-cols-2 gap-8">
-              <div>
-                <h4 className="font-bold text-primary mb-2">Εξειδίκευση</h4>
-                <p className="text-gray-500">Εργατολόγος - Αστικολόγος</p>
-              </div>
-              <div>
-                <h4 className="font-bold text-primary mb-2">Εκπαίδευση</h4>
-                <p className="text-gray-500">Νομική Σχολή Αθηνών</p>
-              </div>
+            
+            <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {[
+                'Προσωπική Επαφή',
+                'Απόλυτη Εχεμύθεια',
+                'Στρατηγική Προσέγγιση',
+                'Άμεση Ανταπόκριση'
+              ].map((item, i) => (
+                <div key={i} className="flex items-center space-x-3">
+                  <CheckCircle2 className="text-secondary" size={20} />
+                  <span className="font-bold text-slate-800">{item}</span>
+                </div>
+              ))}
             </div>
           </motion.div>
         </div>
@@ -235,71 +345,82 @@ const Services = () => {
   const services = [
     {
       title: 'Εργατικό Δίκαιο',
-      description: 'Απολύσεις, δεδουλευμένα, εργατικά ατυχήματα, συμβάσεις εργασίας και διεκδικήσεις.',
-      icon: <Briefcase className="text-secondary" size={32} />,
+      desc: 'Απολύσεις, δεδουλευμένα, εργατικά ατυχήματα και συμβάσεις.',
+      icon: <Briefcase size={32} />,
+      color: 'bg-blue-50'
     },
     {
       title: 'Τροχαία Ατυχήματα',
-      description: 'Πλήρης νομική κάλυψη για αποζημιώσεις από τροχαία ατυχήματα και υλικές ζημιές.',
-      icon: <Car className="text-secondary" size={32} />,
+      desc: 'Διεκδίκηση αποζημιώσεων για σωματικές βλάβες και υλικές ζημιές.',
+      icon: <Car size={32} />,
+      color: 'bg-red-50'
     },
     {
       title: 'Αστικό Δίκαιο',
-      description: 'Ενοχικό, Εμπράγματο, Οικογενειακό και Κληρονομικό δίκαιο.',
-      icon: <Scale className="text-secondary" size={32} />,
+      desc: 'Ενοχικό, Εμπράγματο, Οικογενειακό και Κληρονομικό δίκαιο.',
+      icon: <Scale size={32} />,
+      color: 'bg-slate-50'
     },
     {
       title: 'Διαζύγια',
-      description: 'Συναινετικά και κατ\' αντιδικία διαζύγια, επιμέλεια τέκνων και διατροφές.',
-      icon: <Users className="text-secondary" size={32} />,
+      desc: 'Συναινετικά διαζύγια, επιμέλεια τέκνων και διατροφές.',
+      icon: <Users size={32} />,
+      color: 'bg-indigo-50'
     },
     {
       title: 'Ασφαλιστικά Μέτρα',
-      description: 'Προσωρινή δικαστική προστασία και επείγουσες νομικές ενέργειες.',
-      icon: <ShieldCheck className="text-secondary" size={32} />,
+      desc: 'Προσωρινή δικαστική προστασία και επείγουσες ενέργειες.',
+      icon: <ShieldCheck size={32} />,
+      color: 'bg-emerald-50'
     },
     {
       title: 'Δικαστική Συμπαράσταση',
-      description: 'Νομική εκπροσώπηση και προστασία ατόμων με αδυναμία αυτοδιαχείρισης.',
-      icon: <Gavel className="text-secondary" size={32} />,
+      desc: 'Προστασία ατόμων με αδυναμία αυτοδιαχείρισης.',
+      icon: <Gavel size={32} />,
+      color: 'bg-amber-50'
     },
     {
       title: 'Απαλλοτριώσεις',
-      description: 'Διεκδίκηση αποζημιώσεων για αναγκαστικές απαλλοτριώσεις ακινήτων.',
-      icon: <BookOpen className="text-secondary" size={32} />,
+      desc: 'Αποζημιώσεις για αναγκαστικές απαλλοτριώσεις ακινήτων.',
+      icon: <BookOpen size={32} />,
+      color: 'bg-cyan-50'
     },
     {
       title: 'Αποζημιώσεις',
-      description: 'Διεκδίκηση αποζημιώσεων από κάθε είδους αδικοπραξία ή ενδοσυμβατική ευθύνη.',
-      icon: <Scale className="text-secondary" size={32} />,
+      desc: 'Διεκδικήσεις από αδικοπραξίες και συμβατικές ευθύνες.',
+      icon: <Scale size={32} />,
+      color: 'bg-violet-50'
     },
   ];
 
   return (
-    <section id="services" className="py-24 bg-accent">
+    <section id="services" className="py-32 bg-accent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-sm font-bold text-secondary uppercase tracking-[0.2em] mb-4">Υπηρεσίες</h2>
-          <h3 className="font-display text-4xl font-bold text-primary mb-4">Τομείς Ειδίκευσης</h3>
-          <div className="w-24 h-1 bg-secondary mx-auto"></div>
+        <div className="text-center max-w-3xl mx-auto mb-20">
+          <span className="section-subtitle">Υπηρεσίες</span>
+          <h2 className="section-title">Τομείς Ειδίκευσης</h2>
+          <p className="text-slate-500 text-lg font-light">
+            Παρέχουμε ολοκληρωμένες νομικές υπηρεσίες με εξειδίκευση στους παρακάτω τομείς, διασφαλίζοντας το καλύτερο δυνατό αποτέλεσμα.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {services.map((service, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {services.map((s, i) => (
             <motion.div
-              key={index}
+              key={i}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-white p-8 rounded-sm shadow-sm hover:shadow-md transition-all group border-b-4 border-transparent hover:border-secondary"
+              transition={{ delay: i * 0.05 }}
+              whileHover={{ y: -10 }}
+              className="bg-white p-10 rounded-sm shadow-sm hover:shadow-2xl transition-all duration-500 group border border-slate-100"
             >
-              <div className="mb-6 transform group-hover:scale-110 transition-transform duration-300">
-                {service.icon}
+              <div className={cn("w-16 h-16 rounded-sm flex items-center justify-center mb-8 transition-colors duration-500 text-primary group-hover:bg-secondary group-hover:text-white", s.color)}>
+                {s.icon}
               </div>
-              <h4 className="text-xl font-bold text-primary mb-4">{service.title}</h4>
-              <p className="text-gray-600 leading-relaxed">
-                {service.description}
+              <h4 className="text-xl font-bold text-primary mb-4 group-hover:text-secondary transition-colors">{s.title}</h4>
+              <p className="text-slate-500 leading-relaxed font-light">
+                {s.desc}
               </p>
             </motion.div>
           ))}
@@ -312,47 +433,59 @@ const Services = () => {
 const Reviews = () => {
   const reviews = [
     {
-      name: 'Γιώργος Π.',
-      text: 'Εξαιρετική επαγγελματίας με βαθιά γνώση του αντικειμένου. Με βοήθησε σε μια δύσκολη εργατική διαφορά με απόλυτη επιτυχία.',
+      name: 'Ιωάννης Δ.',
+      role: 'Επιχειρηματίας',
+      text: 'Η κα Μαστοράκη χειρίστηκε μια πολύπλοκη εργατική υπόθεση της εταιρείας μας με απόλυτο επαγγελματισμό και επιτυχία. Την συστήνω ανεπιφύλακτα.',
       rating: 5,
     },
     {
-      name: 'Ελένη Μ.',
-      text: 'Άμεση ανταπόκριση και ειλικρίνεια. Αισθάνθηκα ασφάλεια από την πρώτη στιγμή της συνεργασίας μας.',
+      name: 'Μαρία Π.',
+      role: 'Ιδιωτική Υπάλληλος',
+      text: 'Εξαιρετική άνθρωπος και δικηγόρος. Με βοήθησε σε μια δύσκολη στιγμή της ζωής μου με ειλικρίνεια και αποτελεσματικότητα.',
       rating: 5,
     },
     {
-      name: 'Νίκος Κ.',
-      text: 'Πολύ έμπειρη δικηγόρος. Χειρίστηκε την υπόθεση του τροχαίου ατυχήματος με μεγάλη προσοχή στη λεπτομέρεια.',
+      name: 'Κώστας Λ.',
+      role: 'Συνταξιούχος',
+      text: 'Πολύ έμπειρη και καταρτισμένη. Η καθοδήγησή της στο θέμα της αποζημίωσης από το τροχαίο ήταν καθοριστική.',
       rating: 5,
     },
   ];
 
   return (
-    <section className="py-24 bg-primary text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-sm font-bold text-gray-300 uppercase tracking-[0.2em] mb-4">Μαρτυρίες</h2>
-          <h3 className="font-display text-4xl font-bold mb-4">Τι λένε οι πελάτες μας</h3>
+    <section className="py-32 bg-primary relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
+        <div className="absolute top-10 left-10 text-white"><Scale size={300} /></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center mb-20">
+          <span className="text-secondary font-bold uppercase tracking-[0.3em] text-sm mb-4 block">Μαρτυρίες</span>
+          <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-4">Εμπιστοσύνη Εντολέων</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-          {reviews.map((review, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {reviews.map((r, i) => (
             <motion.div
-              key={index}
-              initial={{ opacity: 0, scale: 0.95 }}
+              key={i}
+              initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              className="bg-white/5 p-8 rounded-sm relative"
+              className="bg-white/5 backdrop-blur-sm p-10 rounded-sm border border-white/10 hover:bg-white/10 transition-all"
             >
-              <Quote className="absolute top-4 right-4 text-white/10" size={48} />
-              <div className="flex mb-4">
-                {[...Array(review.rating)].map((_, i) => (
-                  <Star key={i} size={16} className="text-yellow-500 fill-yellow-500 mr-1" />
+              <div className="flex mb-6">
+                {[...Array(r.rating)].map((_, idx) => (
+                  <Star key={idx} size={16} className="text-amber-400 fill-amber-400 mr-1" />
                 ))}
               </div>
-              <p className="text-lg italic mb-6 text-gray-300">"{review.text}"</p>
-              <p className="font-bold text-white">— {review.name}</p>
+              <Quote className="text-secondary mb-6 opacity-50" size={32} />
+              <p className="text-slate-300 text-lg italic mb-8 leading-relaxed">
+                "{r.text}"
+              </p>
+              <div>
+                <p className="font-bold text-white text-lg">{r.name}</p>
+                <p className="text-slate-400 text-sm uppercase tracking-widest">{r.role}</p>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -363,70 +496,82 @@ const Reviews = () => {
 
 const Contact = () => {
   return (
-    <section id="contact" className="py-24 bg-white">
+    <section id="contact" className="py-32 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-          <div>
-            <h2 className="text-sm font-bold text-secondary uppercase tracking-[0.2em] mb-4">Επικοινωνία</h2>
-            <h3 className="font-display text-4xl font-bold text-primary mb-8">Είμαστε στη διάθεσή σας</h3>
-            <p className="text-gray-600 text-lg mb-10 leading-relaxed">
-              Επικοινωνήστε μαζί μας για να προγραμματίσουμε μια συνάντηση και να συζητήσουμε την υπόθεσή σας.
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-24">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <span className="section-subtitle">Επικοινωνία</span>
+            <h2 className="section-title">Προγραμματίστε μια Συνάντηση</h2>
+            <p className="text-slate-500 text-lg mb-12 font-light leading-relaxed">
+              Βρισκόμαστε στην καρδιά της Αθήνας, ακριβώς απέναντι από τα Δικαστήρια. Είμαστε εδώ για να σας ακούσουμε και να βρούμε την καλύτερη νομική οδό.
             </p>
 
-            <div className="space-y-8">
-              <div className="flex items-start">
-                <div className="bg-accent p-3 rounded-sm mr-4">
-                  <MapPin className="text-primary" size={24} />
+            <div className="space-y-10">
+              <div className="flex items-start group">
+                <div className="w-14 h-14 bg-accent rounded-sm flex items-center justify-center mr-6 group-hover:bg-secondary group-hover:text-white transition-all duration-300">
+                  <MapPin size={24} />
                 </div>
                 <div>
-                  <h4 className="font-bold text-primary">Διεύθυνση</h4>
-                  <p className="text-gray-600">Σκύρου 64 (Έναντι Δικαστηρίων), 4ος όροφος</p>
-                  <p className="text-gray-600">Αθήνα, Τ.Κ. 11362</p>
+                  <h4 className="font-bold text-primary text-lg mb-1">Διεύθυνση</h4>
+                  <p className="text-slate-500">Σκύρου 64 (Έναντι Δικαστηρίων), 4ος όροφος</p>
+                  <p className="text-slate-500">Αθήνα, Τ.Κ. 11362</p>
                 </div>
               </div>
 
-              <div className="flex items-start">
-                <div className="bg-accent p-3 rounded-sm mr-4">
-                  <Phone className="text-primary" size={24} />
+              <div className="flex items-start group">
+                <div className="w-14 h-14 bg-accent rounded-sm flex items-center justify-center mr-6 group-hover:bg-secondary group-hover:text-white transition-all duration-300">
+                  <Phone size={24} />
                 </div>
                 <div>
-                  <h4 className="font-bold text-primary">Τηλέφωνο / Fax</h4>
-                  <p className="text-gray-600">210 8837333</p>
+                  <h4 className="font-bold text-primary text-lg mb-1">Τηλέφωνο / Fax</h4>
+                  <p className="text-slate-500 text-xl font-semibold">210 8837333</p>
                 </div>
               </div>
 
-              <div className="flex items-start">
-                <div className="bg-accent p-3 rounded-sm mr-4">
-                  <Clock className="text-primary" size={24} />
+              <div className="flex items-start group">
+                <div className="w-14 h-14 bg-accent rounded-sm flex items-center justify-center mr-6 group-hover:bg-secondary group-hover:text-white transition-all duration-300">
+                  <Clock size={24} />
                 </div>
                 <div>
-                  <h4 className="font-bold text-primary">Ωράριο Λειτουργίας</h4>
-                  <p className="text-gray-600">Δευτέρα - Παρασκευή: 09:00 - 20:00</p>
-                  <p className="text-gray-600">Σάββατο - Κυριακή: Κλειστά</p>
+                  <h4 className="font-bold text-primary text-lg mb-1">Ωράριο Λειτουργίας</h4>
+                  <p className="text-slate-500">Δευτέρα - Παρασκευή: 09:00 - 20:00</p>
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="h-[450px] bg-gray-100 rounded-sm overflow-hidden shadow-inner relative">
-            {/* Placeholder for Google Maps */}
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
-              <div className="text-center p-8">
-                <MapPin className="mx-auto text-primary mb-4" size={48} />
-                <p className="text-gray-500 font-medium">Χάρτης Τοποθεσίας</p>
-                <p className="text-gray-400 text-sm mt-2">Σκύρου 64, Αθήνα</p>
-                <a 
-                  href="https://www.google.com/maps/search/?api=1&query=Σκύρου+64+Αθήνα" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="mt-4 inline-block text-secondary font-bold hover:underline"
-                >
-                  Προβολή στους Χάρτες Google
-                </a>
-              </div>
+            
+            <div className="mt-16">
+              <a 
+                href="tel:2108837333"
+                className="inline-flex items-center justify-center px-10 py-5 bg-primary text-white font-bold rounded-sm hover:bg-secondary transition-all shadow-xl"
+              >
+                <Phone className="mr-3" size={20} />
+                ΚΑΛΕΣΤΕ ΤΩΡΑ
+              </a>
             </div>
-            {/* In a real app, you'd use an iframe or a map component here */}
-          </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="relative h-[600px] rounded-sm overflow-hidden shadow-2xl border-8 border-slate-50"
+          >
+            <iframe
+              title="Google Maps"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              src="https://maps.google.com/maps?q=Σκύρου%2064,%20Αθήνα&t=&z=16&ie=UTF8&iwloc=&output=embed"
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="absolute inset-0 grayscale contrast-125 hover:grayscale-0 transition-all duration-700"
+            />
+          </motion.div>
         </div>
       </div>
     </section>
@@ -435,31 +580,89 @@ const Contact = () => {
 
 const Footer = () => {
   return (
-    <footer className="bg-primary text-white py-12 border-t border-white/10">
+    <footer className="bg-primary text-white pt-20 pb-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-8 md:mb-0 text-center md:text-left">
-            <span className="font-display text-2xl font-bold tracking-tight block">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 mb-16">
+          <div className="col-span-1 md:col-span-1">
+            <span className="font-display text-3xl font-bold tracking-tight block mb-2">
               ΜΑΡΙΑ ΜΑΣΤΟΡΑΚΗ
             </span>
-            <span className="text-xs font-medium uppercase tracking-[0.2em] text-gray-400">
+            <span className="text-xs font-bold uppercase tracking-[0.4em] text-secondary">
               ΔΙΚΗΓΟΡΟΣ ΠΑΡ' ΑΡΕΙΩ ΠΑΓΩ
             </span>
+            <p className="mt-8 text-slate-400 font-light leading-relaxed">
+              Εξειδικευμένη νομική υποστήριξη με επίκεντρο τον άνθρωπο και το δίκαιο. Πάνω από 20 χρόνια μάχιμης δικηγορίας.
+            </p>
           </div>
           
-          <div className="flex space-x-8 text-sm text-gray-400">
-            <a href="#home" className="hover:text-white transition-colors">Αρχική</a>
-            <a href="#about" className="hover:text-white transition-colors">Το Γραφείο</a>
-            <a href="#services" className="hover:text-white transition-colors">Υπηρεσίες</a>
-            <a href="#contact" className="hover:text-white transition-colors">Επικοινωνία</a>
+          <div>
+            <h4 className="text-lg font-bold mb-8 border-b border-white/10 pb-4">Γρήγοροι Σύνδεσμοι</h4>
+            <ul className="space-y-4 text-slate-400">
+              <li><a href="#home" className="hover:text-secondary transition-colors">Αρχική</a></li>
+              <li><a href="#about" className="hover:text-secondary transition-colors">Το Γραφείο</a></li>
+              <li><a href="#services" className="hover:text-secondary transition-colors">Υπηρεσίες</a></li>
+              <li><a href="#contact" className="hover:text-secondary transition-colors">Επικοινωνία</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-lg font-bold mb-8 border-b border-white/10 pb-4">Επικοινωνία</h4>
+            <ul className="space-y-4 text-slate-400">
+              <li className="flex items-center"><MapPin size={18} className="mr-3 text-secondary" /> Σκύρου 64, Αθήνα</li>
+              <li className="flex items-center"><Phone size={18} className="mr-3 text-secondary" /> 210 8837333</li>
+              <li className="flex items-center"><Clock size={18} className="mr-3 text-secondary" /> Δευ - Παρ: 09:00 - 20:00</li>
+            </ul>
           </div>
         </div>
         
-        <div className="mt-12 pt-8 border-t border-white/5 text-center text-gray-500 text-xs">
-          <p>© {new Date().getFullYear()} Μαρία Μαστοράκη. Με επιφύλαξη παντός δικαιώματος.</p>
+        <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center text-slate-500 text-xs tracking-widest uppercase font-bold">
+          <p>© {new Date().getFullYear()} ΜΑΡΙΑ ΜΑΣΤΟΡΑΚΗ. ALL RIGHTS RESERVED.</p>
+          <div className="mt-4 md:mt-0 flex space-x-6">
+            <a href="#" className="hover:text-white transition-colors">ΠΟΛΙΤΙΚΗ ΑΠΟΡΡΗΤΟΥ</a>
+            <a href="#" className="hover:text-white transition-colors">ΟΡΟΙ ΧΡΗΣΗΣ</a>
+          </div>
         </div>
       </div>
     </footer>
+  );
+};
+
+const FloatingActions = () => {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setShow(window.scrollY > 500);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <div className="fixed bottom-8 right-8 z-50 flex flex-col space-y-4">
+      <AnimatePresence>
+        {show && (
+          <>
+            <motion.a
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0 }}
+              href="tel:2108837333"
+              className="w-14 h-14 bg-secondary text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-red-900 transition-all transform hover:scale-110"
+            >
+              <Phone size={24} />
+            </motion.a>
+            <motion.button
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0 }}
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-slate-800 transition-all transform hover:scale-110"
+            >
+              <ArrowUp size={24} />
+            </motion.button>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 
@@ -467,16 +670,19 @@ const Footer = () => {
 
 export default function App() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen selection:bg-secondary selection:text-white">
+      <ScrollProgress />
       <Navbar />
       <main>
         <Hero />
+        <Stats />
         <About />
         <Services />
         <Reviews />
         <Contact />
       </main>
       <Footer />
+      <FloatingActions />
     </div>
   );
 }
