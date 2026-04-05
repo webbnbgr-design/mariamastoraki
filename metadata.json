@@ -1,0 +1,5 @@
+{
+  "name": "Maria Mastoraki Law Office",
+  "description": "Professional law office website for Maria Mastoraki, Lawyer at the Supreme Court of Greece.",
+  "requestFramePermissions": ["geolocation"]
+}
